@@ -12,6 +12,7 @@ code {
     monospace;
 }
 
+.chat-scroll::-webkit-scrollbar,
 .sql-scroll::-webkit-scrollbar {
   display: none;
 }

@@ -6,13 +6,10 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [sessionId, setSessionId] = useState('test1');
   const [open, setOpen] = useState(false);
 
-  const addMessage = (msg) => {
-    setMessages((prev) => [...prev, msg]);
-  };
+  const addMessage = (msg) => setMessages((prev) => [...prev, msg]);
 
   const callAgent = async (text) => {
     const res = await fetch(`${API_BASE}/api/chat/send`, {
@@ -24,7 +21,7 @@ function App() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Agent error');
+    if (!data.success) throw new Error('Agent error');
 
     const webhook = data.webhook_response;
     if (webhook?.sessionId) setSessionId(webhook.sessionId);
@@ -37,20 +34,16 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const text = input.trim();
-    if (!text || loading) return;
+    if (!input.trim() || loading) return;
 
+    const text = input.trim();
     setInput('');
-    setError(null);
     addMessage({ role: 'user', text });
     setLoading(true);
 
     try {
       const reply = await callAgent(text);
       addMessage({ role: 'agent', text: reply.text, query: reply.query });
-    } catch (err) {
-      setError(err.message);
-      addMessage({ role: 'agent', text: `❌ ${err.message}` });
     } finally {
       setLoading(false);
     }
@@ -58,75 +51,74 @@ function App() {
 
   return (
     <>
-      {/* ================= MAIN AI AGENT CONTENT ================= */}
+      {/* ================= MAIN CONTENT ================= */}
       <div
         style={{
-          minHeight: '100vh',
-          padding: '80px 20px',
+          height: '100vh',
+          padding: '60px 16px',
           background: 'linear-gradient(135deg, #020617, #030d3a)',
           color: '#ffffff',
-          fontFamily: 'system-ui, sans-serif',
+          overflow: 'hidden',
         }}
       >
         <div
           style={{
-            maxWidth: 900,
+            maxWidth: 760,
             margin: '0 auto',
             background: '#020617',
-            borderRadius: 16,
-            padding: 40,
-            boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+            borderRadius: 14,
+            padding: 28,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.45)',
           }}
         >
-          <h1 style={{ fontSize: 32, marginBottom: 10 }}>
+          <h1 style={{ fontSize: 26, marginBottom: 8 }}>
             🧠 Forecast AI Agent
           </h1>
 
-          <p style={{ color: '#cbd5f5', fontSize: 16, marginBottom: 30 }}>
-            Ask business questions in plain English and instantly get
-            production-ready SQL queries for forecasts, revenue, and expenses.
+          <p style={{ fontSize: 14, color: '#cbd5f5', marginBottom: 20 }}>
+            Ask business questions in plain English and instantly receive
+            production-ready SQL queries.
           </p>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: 20,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: 14,
             }}
           >
             <Feature title="Natural Language → SQL">
-              Ask questions like a human. Get clean, executable SQL.
+              Human queries converted into clean SQL.
             </Feature>
 
-            <Feature title="Forecast Scenarios">
-              Increase, decrease, compare, or project financial data.
+            <Feature title="Scenario Forecasting">
+              Increase, decrease, compare or project data.
             </Feature>
 
-            <Feature title="AI-Powered Intelligence">
-              Backed by AI + n8n workflows with session memory.
+            <Feature title="AI Intelligence">
+              Powered by AI + n8n with memory.
             </Feature>
           </div>
 
           <div
             style={{
-              marginTop: 40,
-              background: '#020617',
+              marginTop: 28,
               border: '1px solid #1e293b',
-              borderRadius: 12,
-              padding: 20,
+              borderRadius: 10,
+              padding: 16,
             }}
           >
             <strong>Try asking:</strong>
-            <ul style={{ marginTop: 10, color: '#cbd5f5', lineHeight: 1.8 }}>
-              <li>Show revenue forecast for next quarter</li>
-              <li>Increase marketing expenses by 25%</li>
-              <li>Compare revenue and operating expenses</li>
+            <ul style={{ marginTop: 8, fontSize: 13, color: '#cbd5f5' }}>
+              <li>Revenue forecast for next quarter</li>
+              <li>Increase marketing expenses by 20%</li>
+              <li>Compare revenue and costs</li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* ================= FLOATING CHAT BUTTON ================= */}
+      {/* ================= CHAT BUTTON ================= */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -157,32 +149,28 @@ function App() {
             bottom: 20,
             right: 20,
             width: 380,
-            height: 540,
+            height: 520,
             background: 'linear-gradient(180deg, #020617, #030d3a)',
             borderRadius: 16,
             boxShadow: '0 30px 60px rgba(0,0,0,0.6)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            fontFamily: 'system-ui, sans-serif',
           }}
         >
           {/* Header */}
           <div
             style={{
-              background: 'linear-gradient(135deg, #1e40af, #537dd8ff)',
-              color: '#fff',
+              background: 'linear-gradient(135deg, #1e40af, #537dd8)',
               padding: '10px 14px',
+              color: '#fff',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
             }}
           >
             <div>
               <strong>Forecast AI</strong>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>
-                Natural language → SQL
-              </div>
+              <div style={{ fontSize: 11 }}>Natural → SQL</div>
             </div>
             <button
               onClick={() => setOpen(false)}
@@ -200,11 +188,14 @@ function App() {
 
           {/* Messages */}
           <div
+            className="chat-scroll"
             style={{
               flex: 1,
               padding: 12,
               overflowY: 'auto',
               background: '#020617',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
           >
             {messages.map((m, i) => (
@@ -223,81 +214,65 @@ function App() {
                     padding: '10px 12px',
                     borderRadius: 14,
                     fontSize: 13,
-                    lineHeight: 1.4,
                     background:
                       m.role === 'user'
-                        ? 'linear-gradient(135deg, #1e40af, #537dd8ff)'
+                        ? 'linear-gradient(135deg, #1e40af, #537dd8)'
                         : '#0f172a',
                     color: '#e5e7eb',
                   }}
                 >
                   {m.text}
 
-                  {/* SQL Block */}
                   {m.query && (
                     <div
                       style={{
-                        marginTop: 10,
-                        background: '#020617',
+                        marginTop: 8,
                         border: '1px solid #1e293b',
                         borderRadius: 8,
-                        padding: 8,
                         position: 'relative',
                       }}
                     >
-                      {/* Copy Button */}
                       <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(m.query);
-                        }}
+                        onClick={() =>
+                          navigator.clipboard.writeText(m.query)
+                        }
                         style={{
                           position: 'absolute',
-                          top: 6,
-                          right: 6,
-                          fontSize: 11,
+                          top: 4,
+                          right: 4,
+                          fontSize: 10,
                           padding: '4px 8px',
-                          borderRadius: 6,
-                          border: 'none',
-                          cursor: 'pointer',
                           background: '#2563eb',
                           color: '#fff',
+                          border: 'none',
+                          borderRadius: 6,
+                          cursor: 'pointer',
                         }}
                       >
                         Copy
                       </button>
 
-                      {/* SQL Content */}
                       <pre
-                        style={{
-                          margin: 0,
-                          maxHeight: 160,
-                          overflowY: 'auto',
-                          overflowX: 'auto',
-                          padding: '10px 8px',
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                          color: '#a5f3fc',
-
-                          /* 🔥 Hide scrollbar but allow scroll */
-                          scrollbarWidth: 'none',       // Firefox
-                          msOverflowStyle: 'none',      // IE / Edge
-                        }}
                         className="sql-scroll"
+                        style={{
+                          maxHeight: 140,
+                          margin: 0,
+                          padding: 10,
+                          overflow: 'auto',
+                          fontSize: 11,
+                          color: '#a5f3fc',
+                          background: '#020617',
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                        }}
                       >
                         {m.query}
                       </pre>
                     </div>
                   )}
-
                 </div>
               </div>
             ))}
-
-            {loading && (
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                Forecast AI is thinking…
-              </div>
-            )}
           </div>
 
           {/* Input */}
@@ -305,22 +280,21 @@ function App() {
             onSubmit={handleSubmit}
             style={{
               padding: 10,
-              borderTop: '1px solid #1e293b',
               display: 'flex',
               gap: 8,
+              borderTop: '1px solid #1e293b',
               background: '#020617',
             }}
           >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about revenue, expenses, forecasts…"
+              placeholder="Ask something…"
               style={{
                 flex: 1,
                 borderRadius: 999,
                 border: '1px solid #1e293b',
                 padding: '10px 14px',
-                fontSize: 13,
                 background: '#020617',
                 color: '#e5e7eb',
                 outline: 'none',
@@ -333,9 +307,8 @@ function App() {
                 padding: '10px 18px',
                 borderRadius: 999,
                 border: 'none',
-                background: 'linear-gradient(135deg, #1e40af, #537dd8ff)',
+                background: 'linear-gradient(135deg, #1e40af, #537dd8)',
                 color: '#fff',
-                fontSize: 13,
                 cursor: 'pointer',
                 opacity: loading ? 0.6 : 1,
               }}
@@ -345,24 +318,21 @@ function App() {
           </form>
         </div>
       )}
-
     </>
   );
 }
 
-/* ===== Reusable Feature Card ===== */
 function Feature({ title, children }) {
   return (
     <div
       style={{
-        background: '#020617',
         border: '1px solid #1e293b',
         borderRadius: 12,
-        padding: 20,
+        padding: 16,
       }}
     >
-      <h3 style={{ marginBottom: 8 }}>{title}</h3>
-      <p style={{ color: '#cbd5f5', fontSize: 14 }}>{children}</p>
+      <h3 style={{ fontSize: 15, marginBottom: 6 }}>{title}</h3>
+      <p style={{ fontSize: 13, color: '#cbd5f5' }}>{children}</p>
     </div>
   );
 }
